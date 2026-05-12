@@ -1,44 +1,37 @@
 # 🚗 Valet Parking Management System
 
-## Setup & Run Guide
+A full-stack web-based valet parking management system built with Python 
+and MS SQL Server, designed to automate vehicle check-ins, slot tracking, 
+staff management, and transaction reporting.
 
-### Step 1 — Install Python dependencies
-```
+## 🛠️ Tech Stack
+- Backend: Python, Flask, pyodbc
+- Frontend: HTML, CSS, JavaScript
+- Database: Microsoft SQL Server
+- Architecture: RESTful API
+
+## ✨ Features
+- Dashboard with live statistics and zone occupancy
+- Customer management (view and add)
+- Vehicle registry with owner details
+- Visual parking slot map (available and occupied)
+- Staff roster with availability status
+- Full transaction history
+- Operations: Park Vehicle, Exit Vehicle, Make Payment
+
+## ⚙️ Setup & Run Guide
+
+### Step 1 - Install dependencies
 pip install -r requirements.txt
-```
 
-### Step 2 — Configure your SQL Server connection
-Open `app.py` and update the `DB_CONFIG` block at the top:
+### Step 2 - Configure SQL Server
+Open app.py and update the DB_CONFIG block:
+- server: your SQL Server name
+- database: your database name
+- Use Windows Authentication or SQL login credentials
 
-```python
-DB_CONFIG = {
-    'server':   'localhost',          # or 'DESKTOP-XXXX\\SQLEXPRESS'
-    'database': 'DBMS Lab FP',
-    'driver':   'ODBC Driver 17 for SQL Server',
-    'trusted_connection': 'yes',      # Windows Auth (most common)
-    # For SQL login, comment above and use:
-    # 'uid': 'sa',
-    # 'pwd': 'your_password',
-}
-```
-
-> Make sure SQL Server is running and you've already executed Lab_Queries.sql to create the database and tables.
-
-### Step 3 — Run the backend
-```
+### Step 3 - Run the application
 python app.py
-```
 
-### Step 4 — Open the app
+### Step 4 - Open in browser
 Visit: http://localhost:5000
-
----
-
-## Features
-- 📊 Dashboard with live stats and zone occupancy
-- 👤 Customer management (view + add)
-- 🚙 Vehicle registry with owner details
-- 🅿️ Visual parking slot map (green = free, red = occupied)
-- 👷 Staff roster with availability status
-- 🔄 Full transaction history
-- ⚙️ Operations: Park Vehicle, Exit Vehicle, Make Payment (calls stored procedures)
