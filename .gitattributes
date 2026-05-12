@@ -1,0 +1,3 @@
+*.html linguist-detectable=true
+*.sql linguist-detectable=true
+*.py linguist-detectable=true
