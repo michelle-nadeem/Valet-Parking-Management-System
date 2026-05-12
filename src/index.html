@@ -1,0 +1,1225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Valet Parking Management</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b0f1a;
+        --surface: #111827;
+        --card: #1a2236;
+        --border: #1e2d45;
+        --accent: #3b82f6;
+        --accent2: #06b6d4;
+        --green: #10b981;
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --text: #e2e8f0;
+        --muted: #64748b;
+        --radius: 14px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Sora", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* ── SIDEBAR ── */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 230px;
+        height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        padding: 0 0 24px;
+      }
+      .logo {
+        padding: 28px 22px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+      .logo-text {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .logo-text span {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      nav {
+        flex: 1;
+        padding: 16px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--muted);
+        transition: all 0.2s;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+      }
+      .nav-item:hover {
+        background: var(--card);
+        color: var(--text);
+      }
+      .nav-item.active {
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--accent);
+      }
+      .nav-item .icon {
+        font-size: 17px;
+        width: 22px;
+        text-align: center;
+      }
+
+      /* ── MAIN ── */
+      .main {
+        margin-left: 230px;
+        min-height: 100vh;
+        padding: 36px 36px 60px;
+      }
+
+      /* ── PAGE ── */
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      .page-header {
+        margin-bottom: 28px;
+      }
+      .page-header h1 {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .page-header p {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      /* ── STAT CARDS ── */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+      }
+      .stat-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px 20px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s;
+      }
+      .stat-card:hover {
+        transform: translateY(-3px);
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+      .stat-card.blue::before {
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+      }
+      .stat-card.green::before {
+        background: linear-gradient(90deg, var(--green), #34d399);
+      }
+      .stat-card.amber::before {
+        background: linear-gradient(90deg, var(--amber), #fbbf24);
+      }
+      .stat-card.red::before {
+        background: linear-gradient(90deg, var(--red), #f87171);
+      }
+
+      .stat-icon {
+        font-size: 28px;
+        margin-bottom: 12px;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .stat-label {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .card-header {
+        padding: 18px 22px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .card-header h2 {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .card-body {
+        padding: 20px 22px;
+      }
+
+      /* ── TABLE ── */
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        padding: 10px 14px;
+        text-align: left;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(30, 45, 69, 0.5);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: rgba(59, 130, 246, 0.04);
+      }
+
+      /* ── BADGE ── */
+      .badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .badge-green {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+      }
+      .badge-amber {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+      }
+      .badge-red {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+      }
+      .badge-blue {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+      }
+      .badge-gray {
+        background: rgba(100, 116, 139, 0.15);
+        color: #94a3b8;
+      }
+
+      /* ── BUTTONS ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        font-family: "Sora", sans-serif;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #2563eb;
+      }
+      .btn-success {
+        background: var(--green);
+        color: #fff;
+      }
+      .btn-success:hover {
+        background: #059669;
+      }
+      .btn-danger {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn-outline:hover {
+        background: var(--surface);
+      }
+      .btn-sm {
+        padding: 5px 11px;
+        font-size: 12px;
+      }
+
+      /* ── FORM ── */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .form-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .form-group input,
+      .form-group select {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        padding: 10px 12px;
+        font-size: 13px;
+        font-family: "Sora", sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        border-color: var(--accent);
+      }
+      .form-group select option {
+        background: var(--surface);
+      }
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      /* ── ZONE GRID ── */
+      .zone-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
+      }
+      .zone-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 16px;
+        text-align: center;
+      }
+      .zone-name {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      .zone-ring {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 5px solid var(--border);
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 15px;
+        font-weight: 700;
+        position: relative;
+      }
+      .zone-ring.full {
+        border-color: var(--red);
+        color: var(--red);
+      }
+      .zone-ring.busy {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .zone-ring.free {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .zone-sub {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      /* ── TOAST ── */
+      #toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        display: none;
+        z-index: 999;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+
+      /* ── SLOT GRID ── */
+      .slot-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+      }
+      .slot {
+        padding: 12px 8px;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 600;
+        border: 2px solid transparent;
+      }
+      .slot.free {
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: var(--green);
+      }
+      .slot.taken {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: var(--red);
+      }
+
+      /* ── ERROR ── */
+      .err {
+        color: var(--red);
+        font-size: 12px;
+        padding: 10px 0;
+      }
+      .loading {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      /* ── SECTION TABS ── */
+      .section-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      @media (max-width: 900px) {
+        .sidebar {
+          width: 60px;
+        }
+        .logo-text,
+        .nav-item span {
+          display: none;
+        }
+        .main {
+          margin-left: 60px;
+          padding: 24px 18px;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .section-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">🚗</div>
+        <div class="logo-text">Valet Parking<span>Management System</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" onclick="show('dashboard')">
+          <span class="icon">📊</span><span>Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="show('customers')">
+          <span class="icon">👤</span><span>Customers</span>
+        </button>
+        <button class="nav-item" onclick="show('vehicles')">
+          <span class="icon">🚙</span><span>Vehicles</span>
+        </button>
+        <button class="nav-item" onclick="show('slots')">
+          <span class="icon">🅿️</span><span>Parking Slots</span>
+        </button>
+        <button class="nav-item" onclick="show('staff')">
+          <span class="icon">👷</span><span>Valet Staff</span>
+        </button>
+        <button class="nav-item" onclick="show('transactions')">
+          <span class="icon">🔄</span><span>Transactions</span>
+        </button>
+        <button class="nav-item" onclick="show('operations')">
+          <span class="icon">⚙️</span><span>Operations</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="main">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p>Real-time overview of your valet parking operations</p>
+        </div>
+        <div class="stats-grid" id="stats-grid">
+          <div class="loading">Loading stats…</div>
+        </div>
+        <div class="section-row">
+          <div class="card">
+            <div class="card-header"><h2>🅿️ Zone Occupancy</h2></div>
+            <div class="card-body">
+              <div class="zone-grid" id="zone-grid">
+                <div class="loading">Loading…</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>🔄 Recent Transactions</h2></div>
+            <div class="table-wrap" id="recent-txn">
+              <div class="loading">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="page" id="page-customers">
+        <div class="page-header">
+          <h1>Customers</h1>
+          <p>Manage registered customer profiles</p>
+        </div>
+        <div class="card" style="margin-bottom: 20px">
+          <div class="card-header"><h2>➕ Add New Customer</h2></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>First Name</label>
+                <input id="c-fname" placeholder="Ali" />
+              </div>
+              <div class="form-group">
+                <label>Last Name</label>
+                <input id="c-lname" placeholder="Khan" />
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input id="c-phone" placeholder="03001234567" />
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input id="c-email" placeholder="ali@gmail.com" />
+              </div>
+            </div>
+            <div class="form-actions" style="margin-top: 14px">
+              <button class="btn btn-primary" onclick="addCustomer()">
+                ➕ Add Customer
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>👤 All Customers</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadCustomers()">
+              🔄 Refresh
+            </button>
+          </div>
+          <div class="table-wrap" id="customers-table">
+            <div class="loading">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VEHICLES -->
+      <div class="page" id="page-vehicles">
+        <div class="page-header">
+          <h1>Vehicles</h1>
+          <p>Register new vehicles and view the full fleet</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px">
+          <div class="card-header"><h2>➕ Register New Vehicle</h2></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>License Plate</label>
+                <input
+                  id="v-plate"
+                  placeholder="e.g. LHR-101"
+                  style="text-transform: uppercase"
+                />
+              </div>
+              <div class="form-group">
+                <label>Vehicle Type</label>
+                <select id="v-type">
+                  <option value="">— Select Type —</option>
+                  <option value="Car">Car</option>
+                  <option value="Bike">Bike</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Van">Van</option>
+                  <option value="Truck">Truck</option>
+                </select>
+              </div>
+              <div class="form-group" style="grid-column: 1/-1">
+                <label>Customer</label>
+                <select id="v-customer">
+                  <option value="">— Loading customers… —</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions" style="margin-top: 14px">
+              <button class="btn btn-primary" onclick="addVehicle()">
+                ➕ Register Vehicle
+              </button>
+            </div>
+            <div id="vehicle-msg" class="err"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>🚙 All Vehicles</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadVehicles()">
+              🔄 Refresh
+            </button>
+          </div>
+          <div class="table-wrap" id="vehicles-table">
+            <div class="loading">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLOTS -->
+      <div class="page" id="page-slots">
+        <div class="page-header">
+          <h1>Parking Slots</h1>
+          <p>Visual map of all parking bays</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>🅿️ Slot Status</h2>
+            <div
+              style="
+                display: flex;
+                gap: 10px;
+                font-size: 12px;
+                align-items: center;
+              "
+            >
+              <span style="color: var(--green)">● Free</span>
+              <span style="color: var(--red)">● Occupied</span>
+              <button class="btn btn-outline btn-sm" onclick="loadSlots()">
+                🔄 Refresh
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="slot-grid" id="slot-grid">
+              <div class="loading">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAFF -->
+      <div class="page" id="page-staff">
+        <div class="page-header">
+          <h1>Valet Staff</h1>
+          <p>Staff roster and availability</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>👷 Staff List</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadStaff()">
+              🔄 Refresh
+            </button>
+          </div>
+          <div class="table-wrap" id="staff-table">
+            <div class="loading">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div class="page" id="page-transactions">
+        <div class="page-header">
+          <h1>Transactions</h1>
+          <p>All parking transaction history</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2>🔄 Transaction Log</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadTransactions()">
+              🔄 Refresh
+            </button>
+          </div>
+          <div class="table-wrap" id="txn-table">
+            <div class="loading">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPERATIONS -->
+      <div class="page" id="page-operations">
+        <div class="page-header">
+          <h1>Operations</h1>
+          <p>Park, exit, and process payments</p>
+        </div>
+        <div class="section-row">
+          <div class="card">
+            <div class="card-header"><h2>🚗 Park a Vehicle</h2></div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom: 14px">
+                <label>Vehicle ID</label>
+                <input id="park-vid" type="number" placeholder="e.g. 1" />
+              </div>
+              <div class="form-group" style="margin-bottom: 18px">
+                <label>Slot ID</label>
+                <input id="park-sid" type="number" placeholder="e.g. 3" />
+              </div>
+              <button class="btn btn-success" onclick="parkVehicle()">
+                🚘 Park Vehicle
+              </button>
+              <div id="park-msg" class="err"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>🚪 Exit Vehicle</h2></div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom: 18px">
+                <label>Transaction ID</label>
+                <input id="exit-tid" type="number" placeholder="e.g. 5" />
+              </div>
+              <button class="btn btn-danger" onclick="exitVehicle()">
+                🚗 Exit Vehicle
+              </button>
+              <div id="exit-msg" class="err"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>💳 Make Payment</h2></div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom: 18px">
+                <label>Transaction ID</label>
+                <input id="pay-tid" type="number" placeholder="e.g. 5" />
+              </div>
+              <button class="btn btn-primary" onclick="makePayment()">
+                💳 Pay Now
+              </button>
+              <div id="pay-msg" class="err"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ══ TOAST ══ -->
+    <div id="toast"></div>
+
+    <script>
+      const API = "http://localhost:5000/api";
+
+      // ── NAVIGATION ──────────────────────────────────────────────────────────────
+      function show(page) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        document.getElementById("page-" + page).classList.add("active");
+        event.currentTarget.classList.add("active");
+        loadPage(page);
+      }
+
+      function loadPage(page) {
+        if (page === "dashboard") {
+          loadStats();
+          loadZones();
+          loadRecentTxn();
+        }
+        if (page === "customers") loadCustomers();
+        if (page === "vehicles") {
+          loadVehicles();
+          populateCustomerDropdown();
+        }
+        if (page === "slots") loadSlots();
+        if (page === "staff") loadStaff();
+        if (page === "transactions") loadTransactions();
+      }
+
+      // ── TOAST ───────────────────────────────────────────────────────────────────
+      function toast(msg, ok = true) {
+        const t = document.getElementById("toast");
+        t.textContent = (ok ? "✅ " : "❌ ") + msg;
+        t.style.display = "block";
+        t.style.borderColor = ok ? "var(--green)" : "var(--red)";
+        setTimeout(() => (t.style.display = "none"), 3500);
+      }
+
+      // ── STATS ───────────────────────────────────────────────────────────────────
+      async function loadStats() {
+        const el = document.getElementById("stats-grid");
+        try {
+          const r = await fetch(API + "/stats");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          const avail = d.total_slots - d.occupied_slots;
+          el.innerHTML = `
+      ${statCard("🏢", d.total_customers, "Total Customers", "blue")}
+      ${statCard("🚗", d.total_vehicles, "Registered Vehicles", "blue")}
+      ${statCard("✅", avail, "Available Slots", "green")}
+      ${statCard("🅿️", d.occupied_slots, "Occupied Slots", "red")}
+      ${statCard("👷", d.available_staff, "Available Staff", "green")}
+      ${statCard("🔄", d.active_parkings, "Active Parkings", "amber")}
+      ${statCard("💰", "Rs " + d.total_revenue.toLocaleString(), "Total Revenue", "green")}
+    `;
+        } catch (e) {
+          el.innerHTML = `<div class="err">Cannot connect to backend. Is Flask running?</div>`;
+        }
+      }
+
+      function statCard(icon, val, label, color) {
+        return `<div class="stat-card ${color}">
+    <div class="stat-icon">${icon}</div>
+    <div class="stat-value">${val}</div>
+    <div class="stat-label">${label}</div>
+  </div>`;
+      }
+
+      // ── ZONES ───────────────────────────────────────────────────────────────────
+      async function loadZones() {
+        const el = document.getElementById("zone-grid");
+        try {
+          const r = await fetch(API + "/zones");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          el.innerHTML = d
+            .map((z) => {
+              const pct = Math.round((z.Occupied_Slots / z.Total_Slots) * 100);
+              const cls = pct === 100 ? "full" : pct >= 50 ? "busy" : "free";
+              return `<div class="zone-card">
+        <div class="zone-name">${z.zone_area}</div>
+        <div class="zone-ring ${cls}">${pct}%</div>
+        <div class="zone-sub">${z.Occupied_Slots}/${z.Total_Slots} occupied</div>
+      </div>`;
+            })
+            .join("");
+        } catch (e) {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      // ── RECENT TRANSACTIONS ──────────────────────────────────────────────────────
+      async function loadRecentTxn() {
+        const el = document.getElementById("recent-txn");
+        try {
+          const r = await fetch(API + "/transactions");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          const rows = d
+            .slice(0, 5)
+            .map(
+              (t) => `<tr>
+      <td><span style="font-family:monospace">${t.license_plate}</span></td>
+      <td>${t.slot_number}</td>
+      <td>${badge(t.payment_status)}</td>
+    </tr>`,
+            )
+            .join("");
+          el.innerHTML = `<table><thead><tr><th>Plate</th><th>Slot</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+        } catch {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      // ── CUSTOMERS ────────────────────────────────────────────────────────────────
+      async function loadCustomers() {
+        const el = document.getElementById("customers-table");
+        try {
+          const r = await fetch(API + "/customers");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          const rows = d
+            .map(
+              (c) => `<tr>
+      <td>${c.customer_id}</td>
+      <td>${c.first_name} ${c.last_name}</td>
+      <td>${c.phone_number || "—"}</td>
+      <td>${c.email || "—"}</td>
+    </tr>`,
+            )
+            .join("");
+          el.innerHTML = `<table><thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th></tr></thead><tbody>${rows}</tbody></table>`;
+        } catch {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      async function addCustomer() {
+        const body = {
+          first_name: document.getElementById("c-fname").value,
+          last_name: document.getElementById("c-lname").value,
+          phone_number: document.getElementById("c-phone").value,
+          email: document.getElementById("c-email").value,
+        };
+        if (!body.first_name || !body.last_name) {
+          toast("First and last name required", false);
+          return;
+        }
+        const r = await fetch(API + "/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (d.error) {
+          toast(d.error, false);
+        } else {
+          toast(d.message);
+          loadCustomers();
+        }
+      }
+
+      // ── VEHICLES ─────────────────────────────────────────────────────────────────
+      async function loadVehicles() {
+        const el = document.getElementById("vehicles-table");
+        try {
+          const r = await fetch(API + "/vehicles");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          const rows = d
+            .map(
+              (v) => `<tr>
+      <td>${v.vehicle_id}</td>
+      <td><span style="font-family:monospace;font-weight:600">${v.license_plate}</span></td>
+      <td>${v.vehicle_type || "—"}</td>
+      <td>${v.customer_name}</td>
+    </tr>`,
+            )
+            .join("");
+          el.innerHTML = `<table><thead><tr><th>ID</th><th>License Plate</th><th>Type</th><th>Owner</th></tr></thead><tbody>${rows}</tbody></table>`;
+        } catch {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      async function populateCustomerDropdown() {
+        const sel = document.getElementById("v-customer");
+        try {
+          const r = await fetch(API + "/customers");
+          const d = await r.json();
+          if (d.error || !d.length) return;
+          sel.innerHTML =
+            '<option value="">— Select Customer —</option>' +
+            d
+              .map(
+                (c) =>
+                  `<option value="${c.customer_id}">${c.first_name} ${c.last_name} (ID: ${c.customer_id})</option>`,
+              )
+              .join("");
+        } catch {
+          sel.innerHTML =
+            '<option value="">— Could not load customers —</option>';
+        }
+      }
+
+      async function addVehicle() {
+        const plate = document
+          .getElementById("v-plate")
+          .value.trim()
+          .toUpperCase();
+        const type = document.getElementById("v-type").value;
+        const cid = document.getElementById("v-customer").value;
+        const msg = document.getElementById("vehicle-msg");
+        if (!plate || !type || !cid) {
+          msg.textContent = "All fields are required";
+          return;
+        }
+        msg.textContent = "";
+        const r = await fetch(API + "/vehicles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            license_plate: plate,
+            vehicle_type: type,
+            customer_id: +cid,
+          }),
+        });
+        const d = await r.json();
+        if (d.error) {
+          msg.textContent = d.error;
+        } else {
+          toast(d.message);
+          loadVehicles();
+        }
+      }
+
+      // ── SLOTS ─────────────────────────────────────────────────────────────────────
+      async function loadSlots() {
+        const el = document.getElementById("slot-grid");
+        try {
+          const r = await fetch(API + "/slots");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          el.innerHTML = d
+            .map(
+              (s) => `<div class="slot ${s.is_occupied ? "taken" : "free"}">
+      ${s.slot_number}<br><small>${s.zone_area}</small>
+    </div>`,
+            )
+            .join("");
+        } catch {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      // ── STAFF ─────────────────────────────────────────────────────────────────────
+      async function loadStaff() {
+        const el = document.getElementById("staff-table");
+        try {
+          const r = await fetch(API + "/staff");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          const rows = d
+            .map(
+              (s) => `<tr>
+      <td>${s.staff_id}</td>
+      <td>${s.name}</td>
+      <td>${s.phone_number || "—"}</td>
+      <td>${badge(s.availability_status)}</td>
+    </tr>`,
+            )
+            .join("");
+          el.innerHTML = `<table><thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+        } catch {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      // ── TRANSACTIONS ──────────────────────────────────────────────────────────────
+      async function loadTransactions() {
+        const el = document.getElementById("txn-table");
+        try {
+          const r = await fetch(API + "/transactions");
+          const d = await r.json();
+          if (d.error) {
+            el.innerHTML = `<div class="err">${d.error}</div>`;
+            return;
+          }
+          const rows = d
+            .map(
+              (t) => `<tr>
+      <td>${t.transaction_id}</td>
+      <td><span style="font-family:monospace">${t.license_plate}</span></td>
+      <td>${t.slot_number}</td>
+      <td>${t.staff_name}</td>
+      <td>${t.entry_time || "—"}</td>
+      <td>${t.exit_time || "—"}</td>
+      <td>${t.total_fee != null ? "Rs " + t.total_fee : "—"}</td>
+      <td>${badge(t.payment_status)}</td>
+    </tr>`,
+            )
+            .join("");
+          el.innerHTML = `<table><thead><tr><th>ID</th><th>Plate</th><th>Slot</th><th>Staff</th><th>Entry</th><th>Exit</th><th>Fee</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+        } catch {
+          el.innerHTML = '<div class="err">Connection error</div>';
+        }
+      }
+
+      // ── OPERATIONS ────────────────────────────────────────────────────────────────
+      async function parkVehicle() {
+        const vid = document.getElementById("park-vid").value;
+        const sid = document.getElementById("park-sid").value;
+        if (!vid || !sid) {
+          document.getElementById("park-msg").textContent =
+            "Both fields required";
+          return;
+        }
+        const r = await fetch(API + "/park", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vehicle_id: +vid, slot_id: +sid }),
+        });
+        const d = await r.json();
+        document.getElementById("park-msg").textContent = d.error || "";
+        if (!d.error) {
+          toast(d.message);
+          loadSlots();
+        }
+      }
+
+      async function exitVehicle() {
+        const tid = document.getElementById("exit-tid").value;
+        if (!tid) {
+          document.getElementById("exit-msg").textContent =
+            "Transaction ID required";
+          return;
+        }
+        const r = await fetch(API + "/exit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transaction_id: +tid }),
+        });
+        const d = await r.json();
+        document.getElementById("exit-msg").textContent = d.error || "";
+        if (!d.error) {
+          toast(d.message);
+        }
+      }
+
+      async function makePayment() {
+        const tid = document.getElementById("pay-tid").value;
+        if (!tid) {
+          document.getElementById("pay-msg").textContent =
+            "Transaction ID required";
+          return;
+        }
+        const r = await fetch(API + "/pay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transaction_id: +tid }),
+        });
+        const d = await r.json();
+        document.getElementById("pay-msg").textContent = d.error || "";
+        if (!d.error) {
+          toast(d.message);
+        }
+      }
+
+      // ── HELPERS ────────────────────────────────────────────────────────────────────
+      function badge(val) {
+        if (!val) return '<span class="badge badge-gray">—</span>';
+        const v = val.toLowerCase();
+        if (v === "paid" || v === "available")
+          return `<span class="badge badge-green">${val}</span>`;
+        if (v === "pending")
+          return `<span class="badge badge-amber">${val}</span>`;
+        if (v === "busy") return `<span class="badge badge-red">${val}</span>`;
+        return `<span class="badge badge-gray">${val}</span>`;
+      }
+
+      // ── INIT ───────────────────────────────────────────────────────────────────────
+      loadStats();
+      loadZones();
+      loadRecentTxn();
+    </script>
+  </body>
+</html>
